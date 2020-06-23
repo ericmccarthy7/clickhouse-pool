@@ -10,7 +10,7 @@ connections.
 
 ## Quick Start
 
-```
+```python
 from clickhouse_pool.pool import ChPool
 
 # create a pool
