@@ -25,7 +25,7 @@ with pool.get_client() as client:
     print(result)
 
 # always close all connections in the pool once you're done with it
-pool.close_all_connections()
+pool.cleanup()
 ```
 
 ## Connection Pool Size
@@ -40,5 +40,5 @@ with pool.get_client() as client:
     print(result)
 
 # always close all connections in the pool once you're done with it
-pool.close_all_connections()
+pool.cleanup()
 ```

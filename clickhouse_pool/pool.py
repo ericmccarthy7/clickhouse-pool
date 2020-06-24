@@ -53,7 +53,7 @@ class ChPool(object):
         self._keys += 1
         return self._keys
 
-    def _get_conn(self, key=None):
+    def get_conn(self, key=None):
         """get a free conn and assign to key if not None"""
         self._lock.acquire()
         try:
@@ -74,7 +74,7 @@ class ChPool(object):
         finally:
             self._lock.release()
 
-    def _put_conn(self, conn=None, key=None, close=False):
+    def put_conn(self, conn=None, key=None, close=False):
         """put away a conn"""
 
         self._lock.acquire()
@@ -98,7 +98,7 @@ class ChPool(object):
                 del self._rused[id(conn)]
         finally:
             self._lock.release()
-    def close_all_connections(self):
+    def cleanup(self):
         """close all open connections"""
 
         self._lock.acquire()
@@ -116,6 +116,6 @@ class ChPool(object):
 
     @contextmanager
     def get_client(self, key=None):
-        client = self._get_conn(key)
+        client = self.get_conn(key)
         yield client
-        self._put_conn(conn=client)
+        self.put_conn(conn=client)
