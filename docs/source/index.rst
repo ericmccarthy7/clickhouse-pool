@@ -10,6 +10,8 @@ Welcome to clickhouse-pool's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   introduction.rst
+
 
 
 Indices and tables
