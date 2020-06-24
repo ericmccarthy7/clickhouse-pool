@@ -5,22 +5,26 @@ connection pool. Each connection is an instance of a clickhouse_driver client.
 """
 import os
 import threading
-from time import sleep
+from contextlib import contextmanager
 
 from clickhouse_driver import Client
 
 class ChPoolError(Exception):
     pass
 
+class TooManyConnections(ChPoolError):
+    pass
+
 class ChPool(object):
     """a threadsafe clickhouse-driver connection pool"""
 
-    def __init__(self, connections_min: int = 10, connections_max: int = 20,
-            **kwargs):
+    def __init__(self, **kwargs):
         """initialize the connection pool"""
 
-        self.connections_min = connections_min
-        self.connections_max = connections_max
+        self.connections_min = kwargs.pop("connections_min", 10)
+        self.connections_max = kwargs.pop("connections_max", 20)
+        self.host = kwargs.pop("host", "localhost")
+        self.connection_args = {"host": self.host, **kwargs}
         self.closed = False
         self._pool = []
         self._used = {}
@@ -32,11 +36,11 @@ class ChPool(object):
         self._lock = threading.Lock()
 
         for i in range(self.connections_min):
-            self._connect(**kwargs)
+            self._connect()
 
-    def _connect(self, key=None, **kwargs):
+    def _connect(self, key=None):
         """create a new conn and assign to key"""
-        conn = Client(**kwargs)
+        conn = Client(**self.connection_args)
         if key is not None:
             self._used[key] = conn
             self._rused[id(conn)] = key
@@ -49,7 +53,7 @@ class ChPool(object):
         self._keys += 1
         return self._keys
 
-    def get_conn(self, key=None):
+    def _get_conn(self, key=None):
         """get a free conn and assign to key if not None"""
         self._lock.acquire()
         try:
@@ -65,12 +69,12 @@ class ChPool(object):
                 return conn
             else:
                 if len(self._used) == self.connections_max:
-                    raise PoolError("too many conn")
+                    raise TooManyConnections("too many connections")
                 return self._connect(key)
         finally:
             self._lock.release()
 
-    def put_conn(self, conn=None, key=None, close=False):
+    def _put_conn(self, conn=None, key=None, close=False):
         """put away a conn"""
 
         self._lock.acquire()
@@ -109,3 +113,9 @@ class ChPool(object):
             self.closed = True
         finally:
             self._lock.release()
+
+    @contextmanager
+    def get_client(self, key=None):
+        client = self._get_conn(key)
+        yield client
+        self._put_conn(conn=client)

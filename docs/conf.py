@@ -22,7 +22,10 @@ copyright = '2020, Eric McCarthy'
 author = 'Eric McCarthy'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+
+from clickhouse_pool import __version__
+
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

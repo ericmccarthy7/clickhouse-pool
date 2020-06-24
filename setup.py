@@ -18,9 +18,12 @@ def get_version(rel_path):
     else:
         raise RuntimeError("Unable to find version string.")
 
+name = "clickhouse-pool"
+version = get_version("clickhouse_pool/__init__.py")
+
 setuptools.setup(
-    name="clickhouse-pool",
-    version=get_version("clickhouse_pool/__init__.py"),
+    name=name,
+    version=version,
     author="Eric McCarthy",
     author_email="ericmccarthy7@gmail.com",
     description="A thread-safe connection pool for ClickHouse.",
