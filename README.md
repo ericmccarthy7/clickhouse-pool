@@ -15,7 +15,7 @@ connections.
 ## Quick Start
 
 ```python
-from clickhouse_pool.pool import ChPool
+from clickhouse_pool import ChPool
 
 pool = ChPool()
 
