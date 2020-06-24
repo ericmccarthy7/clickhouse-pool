@@ -17,10 +17,8 @@ connections.
 ```python
 from clickhouse_pool.pool import ChPool
 
-# create a pool
 pool = ChPool()
 
-# get a clickhouse-driver client
 with pool.get_client() as client:
     # execute sql and print the result
     result = client.execute("SELECT * FROM system.numbers LIMIT 5")
@@ -35,12 +33,9 @@ pool.close_all_connections()
 To change the connection pool size,
 
 ```python
-# create a pool with minimum 20 connections and a max of 40
 pool = ChPool(connections_min=20, connections_max=40)
 
-# get a clickhouse-driver client
 with pool.get_client() as client:
-    # execute sql and print the result
     result = client.execute("SELECT * FROM system.numbers LIMIT 5")
     print(result)
 
