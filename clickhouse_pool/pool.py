@@ -32,8 +32,8 @@ class ChPool():
 
         Args:
             **kwargs: similar to clickhouse-driver, all settings available are
-                documented `here.
-                <https://clickhouse.tech/docs/en/single/#settings>`_
+                documented `here
+                <https://clickhouse.tech/docs/en/single/#settings>`_.
         """
 
         self.connections_min = kwargs.pop("connections_min", 10)
@@ -71,8 +71,8 @@ class ChPool():
         self._keys += 1
         return self._keys
 
-    def get_conn(self, key=None):
-        """get a free conn and assign to key if not None"""
+    def pull(self, key=None):
+        """Get an available clickhouse-driver client"""
 
         self._lock.acquire()
         try:
@@ -96,8 +96,8 @@ class ChPool():
         finally:
             self._lock.release()
 
-    def put_conn(self, conn=None, key=None, close=False):
-        """put away a conn"""
+    def push(self, conn=None, key=None, close=False):
+        """Return a client to the pool for reuse"""
 
         self._lock.acquire()
         try:
@@ -140,6 +140,6 @@ class ChPool():
 
     @contextmanager
     def get_client(self, key=None):
-        client = self.get_conn(key)
+        client = self.pull(key)
         yield client
-        self.put_conn(conn=client)
+        self.push(conn=client)
