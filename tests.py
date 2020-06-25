@@ -13,27 +13,27 @@ class TestChPool(unittest.TestCase):
         pool = ChPool(connections_min=5,connections_max=10)
         clients = []
         for i in range(1, 6):
-            clients.append(pool.get_conn())
+            clients.append(pool.pull())
             self.assertEqual(len(pool._used), i)
-        clients.append(pool.get_conn())
+        clients.append(pool.pull())
         self.assertEqual(len(pool._pool), 0)
         self.assertEqual(len(pool._used), 6)
         for client in clients:
             client.execute("SELECT * FROM system.numbers LIMIT 5;")
-            pool.put_conn(conn=client)
+            pool.push(client=client)
         self.assertEqual(len(pool._pool), 5)
         pool.cleanup()
     def test_connections_max(self):
         pool = ChPool(connections_min=1,connections_max=3)
         clients = []
         for i in range(3):
-            clients.append(pool.get_conn())
+            clients.append(pool.pull())
             self.assertEqual(len(pool._used), i+1)
         with self.assertRaises(TooManyConnections):
-            clients.append(pool.get_conn())
+            clients.append(pool.pull())
         for client in clients:
             client.execute("SELECT * FROM system.numbers LIMIT 5;")
-            pool.put_conn(conn=client)
+            pool.push(client=client)
         pool.cleanup()
 
 if __name__ == '__main__':
