@@ -10,7 +10,9 @@ connections.
 
 ## Installation
 
-`pip install clickhouse-pool`
+```sh
+pip install clickhouse-pool
+```
 
 ## Quick Start
 
@@ -41,4 +43,14 @@ with pool.get_client() as client:
 
 # always close all connections in the pool once you're done with it
 pool.cleanup()
+```
+
+## Testing Locally
+
+To run tests locally ensure you have an instance of clickhouse-server running on
+localhost. The easiest way is to use docker:
+
+```sh
+docker run -d -p 9000:9000 yandex/clickhouse-server
+python tests.py
 ```

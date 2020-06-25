@@ -5,8 +5,8 @@ connection pool. Each connection is an instance of a clickhouse_driver client.
 """
 import threading
 from contextlib import contextmanager
-
 from clickhouse_driver import Client
+from typing import Generator
 
 
 class ChPoolError(Exception):
@@ -28,7 +28,7 @@ class ChPool():
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, **kwargs):
-        """Initialize the connection pool
+        """Initialize the pool of clickhouse clients.
 
         Args:
             **kwargs: similar to clickhouse-driver, all settings available are
@@ -56,23 +56,31 @@ class ChPool():
         for _ in range(self.connections_min):
             self._connect()
 
-    def _connect(self, key=None):
-        """create a new conn and assign to key"""
-        conn = Client(**self.connection_args)
+    def _connect(self, key: str = None) -> Client:
+        """Create a new client and assign to a key."""
+        client = Client(**self.connection_args)
         if key is not None:
-            self._used[key] = conn
-            self._rused[id(conn)] = key
+            self._used[key] = client
+            self._rused[id(client)] = key
         else:
-            self._pool.append(conn)
-        return conn
+            self._pool.append(client)
+        return client
 
     def _get_key(self):
-        """return unique key"""
+        """Get an unused key."""
         self._keys += 1
         return self._keys
 
-    def pull(self, key=None):
-        """Get an available clickhouse-driver client"""
+    def pull(self, key: str = None) -> Client:
+        """Get an available client from the pool.
+
+        Args:
+            key: If known, the key of the client you would like.
+
+        Returns:
+            A clickhouse-driver client.
+
+        """
 
         self._lock.acquire()
         try:
@@ -86,9 +94,9 @@ class ChPool():
                 return self._used[key]
 
             if self._pool:
-                self._used[key] = conn = self._pool.pop()
-                self._rused[id(conn)] = key
-                return conn
+                self._used[key] = client = self._pool.pop()
+                self._rused[id(client)] = key
+                return client
 
             if len(self._used) >= self.connections_max:
                 raise TooManyConnections("too many connections")
@@ -96,41 +104,51 @@ class ChPool():
         finally:
             self._lock.release()
 
-    def push(self, conn=None, key=None, close=False):
-        """Return a client to the pool for reuse"""
+    def push(self, client: Client = None, key: str = None, close: bool = False):
+        """Return a client to the pool for reuse.
+
+        Args:
+            client: The client to return.
+            key: If known, the key of the client.
+            close: Close the client instead of adding back to pool.
+
+        """
 
         self._lock.acquire()
         try:
             if self.closed:
                 raise ChPoolError("pool closed")
             if key is None:
-                key = self._rused.get(id(conn))
+                key = self._rused.get(id(client))
                 if key is None:
-                    raise ChPoolError("trying to put unkeyed conn")
+                    raise ChPoolError("trying to put unkeyed client")
             if len(self._pool) < self.connections_min and not close:
                 # TODO: verify connection still valid
-                if conn.connection.connected:
-                    self._pool.append(conn)
+                if client.connection.connected:
+                    self._pool.append(client)
             else:
-                conn.disconnect()
+                client.disconnect()
 
             # ensure thread doesn't put connection back once the pool is closed
             if not self.closed or key in self._used:
                 del self._used[key]
-                del self._rused[id(conn)]
+                del self._rused[id(client)]
         finally:
             self._lock.release()
 
     def cleanup(self):
-        """close all open connections"""
+        """Close all open connections in the pool.
+
+        This method loops through eveery client and calls disconnect.
+        """
 
         self._lock.acquire()
         try:
             if self.closed:
                 raise ChPoolError("pool closed")
-            for conn in self._pool + list(self._used.values()):
+            for client in self._pool + list(self._used.values()):
                 try:
-                    conn.disconnect()
+                    client.disconnect()
                 # TODO: handle problems with disconnect
                 except Exception:
                     pass
@@ -139,7 +157,17 @@ class ChPool():
             self._lock.release()
 
     @contextmanager
-    def get_client(self, key=None):
+    def get_client(self, key: str = None) -> Generator[Client, None, None]:
+        """A clean way to grab a client via a contextmanager.
+
+
+        Args:
+            key: If known, the key of the client to grab.
+
+        Yields:
+            Client: a clickhouse-driver client
+
+        """
         client = self.pull(key)
         yield client
-        self.push(conn=client)
+        self.push(client=client)
