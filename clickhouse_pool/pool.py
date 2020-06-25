@@ -3,28 +3,46 @@
 Heavily inspired by psycopg2/lib/pool.py, this module implements a thread-safe
 connection pool. Each connection is an instance of a clickhouse_driver client.
 """
-import os
 import threading
 from contextlib import contextmanager
 
 from clickhouse_driver import Client
 
+
 class ChPoolError(Exception):
-    pass
+    """A generic exception that may be raised by ChPool"""
+
 
 class TooManyConnections(ChPoolError):
-    pass
+    """Raised when attempting to use more than connections_max clients."""
 
-class ChPool(object):
-    """a threadsafe clickhouse-driver connection pool"""
 
+class ChPool():
+    """A ChPool is a pool of connections (Clients) to a ClickhouseServer.
+
+    Attributes:
+        connections_min (int): minimum number of connections to keep open
+        connections_max (int): maximum number of connections allowed open
+        closed (bool): if closed the pool has no connections and cannot be used
+    """
+
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, **kwargs):
-        """initialize the connection pool"""
+        """Initialize the connection pool
+
+        Args:
+            **kwargs: similar to clickhouse-driver, all settings available are
+                documented `here.
+                <https://clickhouse.tech/docs/en/single/#settings>`_
+        """
 
         self.connections_min = kwargs.pop("connections_min", 10)
         self.connections_max = kwargs.pop("connections_max", 20)
-        self.host = kwargs.pop("host", "localhost")
-        self.connection_args = {"host": self.host, **kwargs}
+
+        self.connection_args = {
+            "host": kwargs.pop("host", "localhost"),
+            **kwargs
+        }
         self.closed = False
         self._pool = []
         self._used = {}
@@ -35,7 +53,7 @@ class ChPool(object):
         self._keys = 0
         self._lock = threading.Lock()
 
-        for i in range(self.connections_min):
+        for _ in range(self.connections_min):
             self._connect()
 
     def _connect(self, key=None):
@@ -55,22 +73,26 @@ class ChPool(object):
 
     def get_conn(self, key=None):
         """get a free conn and assign to key if not None"""
+
         self._lock.acquire()
         try:
             if self.closed:
                 raise ChPoolError("pool closed")
+
             if key is None:
                 key = self._get_key()
+
             if key in self._used:
                 return self._used[key]
+
             if self._pool:
                 self._used[key] = conn = self._pool.pop()
                 self._rused[id(conn)] = key
                 return conn
-            else:
-                if len(self._used) == self.connections_max:
-                    raise TooManyConnections("too many connections")
-                return self._connect(key)
+
+            if len(self._used) >= self.connections_max:
+                raise TooManyConnections("too many connections")
+            return self._connect(key)
         finally:
             self._lock.release()
 
@@ -98,6 +120,7 @@ class ChPool(object):
                 del self._rused[id(conn)]
         finally:
             self._lock.release()
+
     def cleanup(self):
         """close all open connections"""
 
@@ -108,6 +131,7 @@ class ChPool(object):
             for conn in self._pool + list(self._used.values()):
                 try:
                     conn.disconnect()
+                # TODO: handle problems with disconnect
                 except Exception:
                     pass
             self.closed = True
