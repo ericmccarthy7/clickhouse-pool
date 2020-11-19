@@ -8,7 +8,7 @@ Requirements
 ------------
 
 `clickhouse-pool` works with Windows and Unix based systems. The package
-requires Python 3.8 and above due to typing.
+requires Python 3.5 and above due to typing.
 
 Installation
 ------------
