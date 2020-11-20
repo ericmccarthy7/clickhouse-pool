@@ -19,7 +19,8 @@ pip install clickhouse-pool
 ```python
 from clickhouse_pool import ChPool
 
-pool = ChPool()
+# find available settings at https://clickhouse-driver.readthedocs.io/en/latest/api.html#clickhouse_driver.Client
+pool = ChPool(host="localhost")
 
 with pool.get_client() as client:
     # execute sql and print the result
