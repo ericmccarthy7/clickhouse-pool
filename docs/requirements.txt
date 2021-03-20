@@ -7,7 +7,7 @@ colorama==0.4.3
 docutils==0.16
 idna==2.9
 imagesize==1.2.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 packaging==20.4
 pockets==0.9.1
