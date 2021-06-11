@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/clickhouse-pool?style=for-the-badge)](https://pypi.org/project/clickhouse-pool/)
 [![PyPI - License](https://img.shields.io/pypi/l/clickhouse-pool?style=for-the-badge)](https://pypi.org/project/clickhouse-pool/)
-[![Read the Docs](https://img.shields.io/readthedocs/clickhouse-pool?style=for-the-badge)](https://clickhouse-pool.readthedocs.io/en/latest/)
+[![Read the Docs](https://img.shields.io/badge/docs-gh--pages-success?style=for-the-badge)](https://ericmccarthy7.github.io/clickhouse-pool/)
 
 A thread-safe connection pool for ClickHouse. Inspired by `psycopg2` and using
 [`clickhouse-driver`](https://github.com/mymarilyn/clickhouse-driver) for

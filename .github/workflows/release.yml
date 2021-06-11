@@ -53,6 +53,7 @@ jobs:
         run: |
           poetry install
           poetry run sphinx-build -M html docs/source docs/_build
+          touch docs/_build/html/.nojekyll
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
