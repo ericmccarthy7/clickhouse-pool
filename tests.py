@@ -8,7 +8,9 @@ class TestChPool(unittest.TestCase):
             result = client.execute("SELECT * FROM system.numbers LIMIT 5;")
             self.assertEqual(result, [(0,), (1,), (2,), (3,), (4,)])
             self.assertEqual(len(pool._used), 1)
+        self.assertEqual(len(pool._used), 0)
         pool.cleanup()
+
     def test_connections_min(self):
         pool = ChPool(connections_min=5,connections_max=10)
         clients = []
@@ -23,6 +25,7 @@ class TestChPool(unittest.TestCase):
             pool.push(client=client)
         self.assertEqual(len(pool._pool), 5)
         pool.cleanup()
+
     def test_connections_max(self):
         pool = ChPool(connections_min=1,connections_max=3)
         clients = []
@@ -34,6 +37,15 @@ class TestChPool(unittest.TestCase):
         for client in clients:
             client.execute("SELECT * FROM system.numbers LIMIT 5;")
             pool.push(client=client)
+        pool.cleanup()
+
+    def test_connection_released_on_error(self):
+        pool = ChPool()
+        try:
+            with pool.get_client() as client:
+                client.execute("some_invalid_sql")
+        except: pass
+        self.assertEqual(len(pool._used), 0)
         pool.cleanup()
 
 if __name__ == '__main__':
