@@ -169,5 +169,7 @@ class ChPool():
 
         """
         client = self.pull(key)
-        yield client
-        self.push(client=client)
+        try:
+            yield client
+        finally:
+            self.push(client=client)
