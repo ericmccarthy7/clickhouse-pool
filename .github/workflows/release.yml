@@ -36,3 +36,25 @@ jobs:
         run: |
           poetry config pypi-token.pypi $PYPI_TOKEN
           poetry publish
+  docs:
+    name: docs/python-3.8
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Python Poetry Action
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: "1.1.6"
+      - name: Build Docs
+        run: |
+          poetry install
+          poetry run sphinx-build -M html docs/source docs/_build
+      - name: Deploy Docs
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: docs/_build/html

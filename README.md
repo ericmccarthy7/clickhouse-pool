@@ -55,3 +55,9 @@ localhost. The easiest way is to use docker:
 docker run -d -p 9000:9000 yandex/clickhouse-server
 poetry run pytest
 ```
+
+## Building Docs
+
+```sh
+poetry run sphinx-build -M html docs/source docs/_build
+```
