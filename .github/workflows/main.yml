@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  tests:
+    name: tests/python-3.8
+    runs-on: ubuntu-20.04
+    services:
+      clickhouse:
+        image: yandex/clickhouse-server
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Python Poetry Action
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: "1.1.6"
+      - name: Test
+        run: |
+          poetry install
+          poetry run pytest
+        env:
+          TEST_CLICKHOUSE_HOST: clickhouse

@@ -53,5 +53,5 @@ localhost. The easiest way is to use docker:
 
 ```sh
 docker run -d -p 9000:9000 yandex/clickhouse-server
-python tests.py
+poetry run pytest
 ```

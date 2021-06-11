@@ -17,7 +17,7 @@ class TooManyConnections(ChPoolError):
     """Raised when attempting to use more than connections_max clients."""
 
 
-class ChPool():
+class ChPool:
     """A ChPool is a pool of connections (Clients) to a ClickhouseServer.
 
     Attributes:
@@ -39,10 +39,7 @@ class ChPool():
         self.connections_min = kwargs.pop("connections_min", 10)
         self.connections_max = kwargs.pop("connections_max", 20)
 
-        self.connection_args = {
-            "host": kwargs.pop("host", "localhost"),
-            **kwargs
-        }
+        self.connection_args = {"host": kwargs.pop("host", "localhost"), **kwargs}
         self.closed = False
         self._pool = []
         self._used = {}
