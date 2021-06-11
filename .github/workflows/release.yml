@@ -12,6 +12,8 @@ jobs:
     services:
       clickhouse:
         image: yandex/clickhouse-server
+        ports:
+          - 9000:9000
     steps:
       - uses: actions/checkout@v2
       - name: set up python 3.8
@@ -26,8 +28,6 @@ jobs:
         run: |
           poetry install
           poetry run pytest
-        env:
-          TEST_CLICKHOUSE_HOST: clickhouse
       - name: Build
         run: poetry build
       - name: Publish
