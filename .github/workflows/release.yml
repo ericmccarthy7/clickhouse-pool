@@ -32,9 +32,9 @@ jobs:
         run: poetry build
       - name: Publish
         env:
-          PYPI_TOKEN: $ {{ secrets.PYPI_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry config pypi-token.pypi "$PYPI_TOKEN"
           poetry publish
   docs:
     name: docs/python-3.8
