@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clickhouse-pool"
-version = "0.5.0"
+version = "0.5.3"
 description = "a thread-safe connection pool for ClickHouse"
 authors = ["Eric McCarthy <ericmccarthy7@gmail.com>"]
 license = "LGPL-3.0-or-later"
