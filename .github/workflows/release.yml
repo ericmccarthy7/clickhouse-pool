@@ -7,8 +7,8 @@ on:
 
 jobs:
   publish:
-    name: publish/python-3.8
-    runs-on: ubuntu-20.04
+    name: publish/python-3.12
+    runs-on: ubuntu-24.04
     services:
       clickhouse:
         image: yandex/clickhouse-server
@@ -16,14 +16,14 @@ jobs:
           - 9000:9000
     steps:
       - uses: actions/checkout@v2
-      - name: set up python 3.8
-        uses: actions/setup-python@v2
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.12"
       - name: Python Poetry Action
-        uses: abatilo/actions-poetry@v2.1.0
+        uses: abatilo/actions-poetry@v2
         with:
-          poetry-version: "1.1.6"
+          poetry-version: "1.8.3"
       - name: Test
         run: |
           poetry install
@@ -37,25 +37,25 @@ jobs:
           poetry config pypi-token.pypi "$PYPI_TOKEN"
           poetry publish
   docs:
-    name: docs/python-3.8
-    runs-on: ubuntu-20.04
+    name: docs/python-3.12
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
-      - name: set up python 3.8
-        uses: actions/setup-python@v2
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.12"
       - name: Python Poetry Action
-        uses: abatilo/actions-poetry@v2.1.0
+        uses: abatilo/actions-poetry@v2
         with:
-          poetry-version: "1.1.6"
+          poetry-version: "1.8.3"
       - name: Build Docs
         run: |
           poetry install
           poetry run sphinx-build -M html docs/source docs/_build
           touch docs/_build/html/.nojekyll
       - name: Deploy Docs
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: docs/_build/html
