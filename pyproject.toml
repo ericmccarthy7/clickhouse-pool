@@ -10,7 +10,7 @@ repository = "https://github.com/ericmccarthy7/clickhouse-pool"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-clickhouse-driver = "0.2.7"
+clickhouse-driver = "^0.2.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
